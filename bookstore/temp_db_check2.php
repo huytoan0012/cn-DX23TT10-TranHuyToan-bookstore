@@ -1,0 +1,1 @@
+<?php $conn=new mysqli("127.0.0.1","root","","bookstore_db"); if($conn->connect_error){echo "CONNECTERROR: ".$conn->connect_error; exit(1);} $res=$conn->query("SELECT id,name,category,price FROM products"); if(!$res){echo "ERROR: ".$conn->error; exit(1);} while($row=$res->fetch_assoc()){ echo $row["id"]."|".$row["name"]."|".$row["category"]."|".$row["price"]."\n";} ?>
