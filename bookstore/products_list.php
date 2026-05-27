@@ -242,7 +242,7 @@
     </div>
 
     <?php
-    $sql = "SELECT id, name, price, category, image, stock FROM products ORDER BY id DESC";
+    $sql = "SELECT id, name, price, category, image FROM products ORDER BY id DESC";
     $result = $conn->query($sql);
 
     if ($result && $result->num_rows > 0) {
@@ -255,7 +255,6 @@
                     <th>Tên Sản Phẩm</th>
                     <th>Giá (VND)</th>
                     <th>Danh Mục</th>
-                    <th>Tồn Kho</th>
                     <th>Hành Động</th>
                 </tr>
             </thead>
@@ -273,7 +272,6 @@
                         <td><?php echo htmlspecialchars($row['name']); ?></td>
                         <td><?php echo number_format($row['price'], 0, ',', '.'); ?></td>
                         <td><?php echo htmlspecialchars($row['category']); ?></td>
-                        <td><?php echo $row['stock']; ?></td>
                         <td>
                             <div class="action-buttons">
                                 <a href="edit_product.php?id=<?php echo $row['id']; ?>" class="btn-edit">✏️ Sửa</a>

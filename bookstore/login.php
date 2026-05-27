@@ -15,21 +15,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($username === '' || $password === '') {
         $error = 'Vui lòng nhập tên đăng nhập và mật khẩu.';
     } else {
-        $stmt = $conn->prepare('SELECT id, username, password_hash FROM users WHERE username = ?');
+        $stmt = $conn->prepare('SELECT id, username, password_hash, role FROM users WHERE username = ?');
         $stmt->bind_param('s', $username);
         $stmt->execute();
         $result = $stmt->get_result();
         $user = $result->fetch_assoc();
         $stmt->close();
 
-        if ($user && password_verify($password, $user['password_hash'])) {
-            $_SESSION['user'] = [
-                'id' => $user['id'],
-                'username' => $user['username'],
-            ];
-            header('Location: ' . $redirect);
-            exit;
-        }
+       if ($user && password_verify($password, $user['password_hash'])) {
+    $_SESSION['user'] = [
+        'id' => $user['id'],
+        'username' => $user['username'],
+        'role' => $user['role'] ?? 'user',  // 👈 THÊM DÒNG NÀY
+    ];
+    header('Location: ' . $redirect);
+    exit;
+}
 
         $error = 'Tên đăng nhập hoặc mật khẩu không đúng.';
     }

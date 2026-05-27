@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $stmt->close();
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)');
+            $stmt = $conn->prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, "user")');
             $stmt->bind_param('ss', $username, $passwordHash);
             if ($stmt->execute()) {
                 $_SESSION['user'] = [

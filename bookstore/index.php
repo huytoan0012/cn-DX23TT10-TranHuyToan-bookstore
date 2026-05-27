@@ -58,8 +58,7 @@ while($row = $result->fetch_assoc()) {
     echo "<span class='price'>" . number_format($row['price'], 0, ',', '.') . "đ</span>";
     echo "</div>";
     echo "<div class='product-actions'>";
-    echo "<a href='product.php?id=" . $row['id'] . "' class='quick-view'>→</a>";
-    echo "<span class='buy-now'>XEM NHANH</span>";
+    echo "<button class='quick-view-btn' data-id='" . $row['id'] . "'>XEM NHANH</button>";
     echo "</div>";
     echo "</div>";
     echo "</div>";

@@ -27,33 +27,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (isset($_POST['checkout'])) {
-        // Xử lý thanh toán
+        // Lấy giỏ hàng từ session
         $cartItems = $_SESSION['cart'] ?? [];
+        
         if (!empty($cartItems)) {
             $conn->begin_transaction();
+            $error = false;
+            $errorMessage = '';
+            
             try {
                 foreach ($cartItems as $productId => $quantity) {
                     $productId = intval($productId);
                     $quantity = intval($quantity);
-                    $product = $products[$productId] ?? null;
-                    if ($product && $product['stock'] >= $quantity) {
-                        $totalPrice = $product['price'] * $quantity;
-                        $sql = "INSERT INTO sales (product_id, quantity, total_price) VALUES ($productId, $quantity, $totalPrice)";
-                        $conn->query($sql);
-                        $newStock = $product['stock'] - $quantity;
-                        $conn->query("UPDATE products SET stock = $newStock WHERE id = $productId");
-                    } else {
-                        throw new Exception("Không đủ hàng cho sản phẩm ID $productId");
+                    
+                    // ✅ SỬA LỖI: Lấy thông tin sản phẩm từ database thay vì mảng $products
+                    $stmt = $conn->prepare("SELECT price, stock FROM products WHERE id = ?");
+                    $stmt->bind_param("i", $productId);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    $product = $result->fetch_assoc();
+                    $stmt->close();
+                    
+                    if (!$product) {
+                        throw new Exception("Sản phẩm ID $productId không tồn tại!");
                     }
+                    
+                    if ($product['stock'] < $quantity) {
+                        throw new Exception("Không đủ hàng cho sản phẩm ID $productId. Tồn kho: {$product['stock']}");
+                    }
+                    
+                    $totalPrice = $product['price'] * $quantity;
+                    
+                    // Ghi vào bảng sales
+                    $sql = "INSERT INTO sales (product_id, quantity, total_price) VALUES (?, ?, ?)";
+                    $stmt2 = $conn->prepare($sql);
+                    $stmt2->bind_param("iid", $productId, $quantity, $totalPrice);
+                    $stmt2->execute();
+                    $stmt2->close();
+                    
+                    // Cập nhật tồn kho
+                    $newStock = $product['stock'] - $quantity;
+                    $updateStmt = $conn->prepare("UPDATE products SET stock = ? WHERE id = ?");
+                    $updateStmt->bind_param("ii", $newStock, $productId);
+                    $updateStmt->execute();
+                    $updateStmt->close();
                 }
+                
                 $conn->commit();
-                $_SESSION['cart'] = [];
-                $_SESSION['flash_message'] = 'Thanh toán thành công!';
+                $_SESSION['cart'] = []; // Xóa giỏ hàng sau khi thanh toán thành công
+                $_SESSION['flash_message'] = '✅ Thanh toán thành công! Cảm ơn bạn đã mua hàng.';
+                
             } catch (Exception $e) {
                 $conn->rollback();
-                $_SESSION['flash_message'] = 'Lỗi: ' . $e->getMessage();
+                $_SESSION['flash_message'] = '❌ Lỗi: ' . $e->getMessage();
             }
+        } else {
+            $_SESSION['flash_message'] = '⚠️ Giỏ hàng trống, không thể thanh toán.';
         }
+        
         header('Location: cart.php');
         exit;
     }
@@ -62,6 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+// Lấy giỏ hàng từ session
 $cartItems = $_SESSION['cart'] ?? [];
 $products = [];
 $total = 0;
@@ -84,7 +116,8 @@ unset($_SESSION['flash_message']);
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Giỏ hàng</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng - Nhà Sách Á Đông</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         .cart-page {
@@ -145,6 +178,7 @@ unset($_SESSION['flash_message']);
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            font-weight: 600;
         }
 
         .btn-primary {
@@ -152,9 +186,17 @@ unset($_SESSION['flash_message']);
             color: white;
         }
 
+        .btn-primary:hover {
+            background: #0a4fa1;
+        }
+
         .btn-secondary {
             background: #f4f6f9;
             color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
         }
 
         .cart-empty {
@@ -162,22 +204,60 @@ unset($_SESSION['flash_message']);
             padding: 40px;
             color: #555;
         }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc3545;
+        }
+
+        .warning-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .product-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
 <?php include 'header.php'; ?>
 
 <div class="cart-page">
-    <h2>Giỏ hàng của bạn</h2>
+    <h2>🛒 Giỏ hàng của bạn</h2>
 
-    <?php if ($flashMessage): ?>
-        <div class="success-message"><?= htmlspecialchars($flashMessage) ?></div>
+    <?php if ($flashMessage): 
+        $msgClass = 'success-message';
+        if (strpos($flashMessage, '❌') !== false) $msgClass = 'error-message';
+        if (strpos($flashMessage, '⚠️') !== false) $msgClass = 'warning-message';
+    ?>
+        <div class="<?= $msgClass ?>"><?= htmlspecialchars($flashMessage) ?></div>
     <?php endif; ?>
 
     <?php if (empty($cartItems) || empty($products)): ?>
         <div class="cart-empty">
-            <p>Giỏ hàng của bạn đang trống.</p>
-            <a href="index.php" class="btn-primary">Tiếp tục mua sắm</a>
+            <p>🛍️ Giỏ hàng của bạn đang trống.</p>
+            <a href="index.php" class="btn-primary" style="display: inline-block; margin-top: 15px;">Tiếp tục mua sắm</a>
         </div>
     <?php else: ?>
         <form method="post" action="cart.php">
@@ -199,16 +279,23 @@ unset($_SESSION['flash_message']);
                         $product = $products[$productId];
                         $subtotal = $product['price'] * $quantity;
                         $total += $subtotal;
+                        
+                        $imagePath = !empty($product['image']) && file_exists(__DIR__ . '/images/products/' . $product['image'])
+                            ? 'images/products/' . htmlspecialchars($product['image'])
+                            : 'images/banner.jpg';
                     ?>
                         <tr>
-                            <td><?= htmlspecialchars($product['name']) ?></td>
+                            <td style="display: flex; align-items: center; gap: 12px;">
+                                <img src="<?= $imagePath ?>" class="product-image" alt="<?= htmlspecialchars($product['name']) ?>">
+                                <strong><?= htmlspecialchars($product['name']) ?></strong>
+                            </td>
                             <td><?= number_format($product['price'], 0, ',', '.') ?> VND</td>
                             <td>
-                                <input type="number" name="quantity[<?= $productId ?>]" value="<?= $quantity ?>" min="0">
+                                <input type="number" name="quantity[<?= $productId ?>]" value="<?= $quantity ?>" min="0" max="<?= $product['stock'] ?>">
                             </td>
                             <td><?= number_format($subtotal, 0, ',', '.') ?> VND</td>
                             <td>
-                                <button type="submit" name="remove" value="<?= $productId ?>" class="btn-secondary">Xóa</button>
+                                <button type="submit" name="remove" value="<?= $productId ?>" class="btn-secondary">🗑️ Xóa</button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -216,14 +303,16 @@ unset($_SESSION['flash_message']);
             </table>
 
             <div class="cart-summary">
-                <button type="submit" name="update_cart" class="btn-primary">Cập nhật giỏ hàng</button>
-                <button type="submit" name="checkout" class="btn-primary" style="background: #28a745; margin-left: 10px;">Thanh toán</button>
-                <div class="summary-total">Tổng: <?= number_format($total, 0, ',', '.') ?> VND</div>
+                <div>
+                    <button type="submit" name="update_cart" class="btn-primary">🔄 Cập nhật giỏ hàng</button>
+                    <button type="submit" name="checkout" class="btn-primary" style="background: #28a745; margin-left: 10px;">✅ Thanh toán</button>
+                </div>
+                <div class="summary-total">💰 Tổng: <?= number_format($total, 0, ',', '.') ?> VND</div>
             </div>
         </form>
 
         <form method="post" action="cart.php" style="margin-top: 16px;">
-            <button type="submit" name="clear_cart" class="btn-secondary">Xóa toàn bộ giỏ hàng</button>
+            <button type="submit" name="clear_cart" class="btn-secondary" onclick="return confirm('Bạn có chắc muốn xóa toàn bộ giỏ hàng?')">🗑️ Xóa toàn bộ giỏ hàng</button>
         </form>
     <?php endif; ?>
 </div>

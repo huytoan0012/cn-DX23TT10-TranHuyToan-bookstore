@@ -18,36 +18,6 @@ if (!$conn->query($userTableSql)) {
     die("Lỗi tạo bảng users: " . $conn->error);
 }
 
-$productsTableSql = "CREATE TABLE IF NOT EXISTS products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    category VARCHAR(100),
-    author VARCHAR(255),
-    publisher VARCHAR(255),
-    description TEXT,
-    image VARCHAR(255),
-    stock INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
-
-if (!$conn->query($productsTableSql)) {
-    die("Lỗi tạo bảng products: " . $conn->error);
-}
-
-$salesTableSql = "CREATE TABLE IF NOT EXISTS sales (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    product_id INT NOT NULL,
-    quantity INT NOT NULL,
-    total_price DECIMAL(10,2) NOT NULL,
-    sale_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
-
-if (!$conn->query($salesTableSql)) {
-    die("Lỗi tạo bảng sales: " . $conn->error);
-}
-
 function current_user() {
     return $_SESSION['user'] ?? null;
 }
@@ -71,5 +41,10 @@ function cart_count() {
 
 function get_cart_items() {
     return $_SESSION['cart'] ?? [];
+}
+// Kiểm tra user có phải admin không
+function is_admin() {
+    $user = current_user();
+    return ($user && isset($user['role']) && $user['role'] === 'admin');
 }
 ?>

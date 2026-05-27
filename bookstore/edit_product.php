@@ -248,7 +248,6 @@
 
             // Nếu không có lỗi, cập nhật database
             if ($messageType !== 'error') {
-                $stock = intval($_POST['stock'] ?? 0);
                 $name_escaped = $conn->real_escape_string($name);
                 $price_escaped = $conn->real_escape_string($price);
                 $category_escaped = $conn->real_escape_string($category);
@@ -256,9 +255,8 @@
                 $publisher_escaped = $conn->real_escape_string($publisher);
                 $description_escaped = $conn->real_escape_string($description);
                 $image_escaped = $conn->real_escape_string($image);
-                $stock_escaped = $conn->real_escape_string($stock);
 
-                $sql = "UPDATE products SET name='$name_escaped', price='$price_escaped', category='$category_escaped', author='$author_escaped', publisher='$publisher_escaped', description='$description_escaped', image='$image_escaped', stock='$stock_escaped' WHERE id=$id";
+                $sql = "UPDATE products SET name='$name_escaped', price='$price_escaped', category='$category_escaped', author='$author_escaped', publisher='$publisher_escaped', description='$description_escaped', image='$image_escaped' WHERE id=$id";
 
                 if ($conn->query($sql) === TRUE) {
                     $message = '✅ Cập nhật sản phẩm thành công!';
@@ -269,7 +267,6 @@
                     $product['category'] = $category;
                     $product['description'] = $description;
                     $product['image'] = $image;
-                    $product['stock'] = $stock;
                 } else {
                     $message = '❌ Lỗi: ' . $conn->error;
                     $messageType = 'error';
@@ -295,11 +292,6 @@
             <div class="form-group">
                 <label for="price">Giá (VND) <span style="color: red;">*</span></label>
                 <input type="number" id="price" name="price" value="<?php echo $product['price']; ?>" min="0" step="1000" required>
-            </div>
-
-            <div class="form-group">
-                <label for="stock">Số Lượng Tồn Kho</label>
-                <input type="number" id="stock" name="stock" value="<?php echo $product['stock'] ?? 0; ?>" min="0">
             </div>
 
             <div class="form-group">

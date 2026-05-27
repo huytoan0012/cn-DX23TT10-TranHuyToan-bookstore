@@ -6,23 +6,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'], $_POST
     $quantity = max(1, intval($_POST['quantity'] ?? 1));
 
     if ($productId > 0) {
-        // Kiểm tra stock
-        $sql = "SELECT stock FROM products WHERE id = $productId";
-        $result = $conn->query($sql);
-        if ($result && $row = $result->fetch_assoc()) {
-            $currentStock = $row['stock'];
-            $currentInCart = $_SESSION['cart'][$productId] ?? 0;
-            if ($currentInCart + $quantity <= $currentStock) {
-                if (!isset($_SESSION['cart'][$productId])) {
-                    $_SESSION['cart'][$productId] = 0;
-                }
-                $_SESSION['cart'][$productId] += $quantity;
-                header('Location: cart.php');
-                exit;
-            } else {
-                $error = "Không đủ hàng. Tồn kho: $currentStock, trong giỏ: $currentInCart";
-            }
+        if (!isset($_SESSION['cart'][$productId])) {
+            $_SESSION['cart'][$productId] = 0;
         }
+        $_SESSION['cart'][$productId] += $quantity;
+        header('Location: cart.php');
+        exit;
     }
 }
 ?>
@@ -210,11 +199,10 @@ if ($id > 0) {
 }
 
 $categoryNames = [
-    'sach_vietnam' => 'Sách Việt Nam',
-    'sach_nuoc_ngoai' => 'Foreign Books',
-    'van_phong_pham' => 'Văn Phòng Phẩm',
-    'do_choi' => 'Đồ Chơi',
-    'qua_tang' => 'Quà Tặng'
+    'khao_cuu_van_hoa' => 'Khảo cứu Văn hóa & Phong tục Học',
+    'lich_su_do_thi' => 'Lịch sử & Di sản Đô thị',
+    'nghe_thuat_kien_truc' => 'Nghệ thuật, Kiến trúc & Trang phục',
+    'am_thuc_van_chuong' => 'Văn hóa Âm thực & Văn chương Lối sống',
 ];
 ?>
 
@@ -246,9 +234,6 @@ $categoryNames = [
                         <div><strong>Nhà xuất bản:</strong> <?php echo htmlspecialchars(!empty($product['publisher']) ? $product['publisher'] : 'Chưa có'); ?></div>
                     </div>
                     <div class="detail-description"><?php echo nl2br(htmlspecialchars($product['description'] ?: 'Chưa có mô tả chi tiết cho sản phẩm này.')); ?></div>
-                    <?php if (isset($error)): ?>
-                        <div style="color: red; margin: 10px 0;"><?php echo $error; ?></div>
-                    <?php endif; ?>
                     <div class="detail-actions">
                         <form method="post" action="product.php?id=<?php echo $product['id']; ?>" style="margin:0;">
                             <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">

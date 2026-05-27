@@ -14,11 +14,10 @@
 $category = isset($_GET['category']) ? $_GET['category'] : '';
 $sub = isset($_GET['sub']) ? $_GET['sub'] : '';
 $categories = [
-    'sach_vietnam' => 'Sách Việt Nam',
-    'sach_nuoc_ngoai' => 'Foreign Books',
-    'van_phong_pham' => 'Văn Phòng Phẩm',
-    'do_choi' => 'Đồ Chơi',
-    'qua_tang' => 'Quà Tặng'
+    'khao_cuu_van_hoa' => 'Khảo cứu Văn hóa & Phong tục Học',
+    'lich_su_do_thi' => 'Lịch sử & Di sản Đô thị',
+    'nghe_thuat_kien_truc' => 'Nghệ thuật, Kiến trúc & Trang phục',
+    'am_thuc_van_chuong' => 'Văn hóa Âm thực & Văn chương Lối sống',
 ];
 $subNames = [
     'bup_be' => 'Búp Bê - Thú Bông',
@@ -76,8 +75,7 @@ if ($result && $result->num_rows > 0) {
         echo "<span class='price'>" . number_format($row['price'], 0, ',', '.') . "đ</span>";
         echo "</div>";
         echo "<div class='product-actions'>";
-        echo "<a href='product.php?id=" . $row['id'] . "' class='quick-view'>→</a>";
-        echo "<span class='buy-now'>XEM NHANH</span>";
+        echo "<button class='quick-view-btn' data-id='" . $row['id'] . "'>XEM NHANH</button>";
         echo "</div>";
         echo "</div>";
         echo "</div>";

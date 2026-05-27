@@ -1,7 +1,10 @@
 <?php
+
 $user = current_user();
 $cartCount = cart_count();
 $searchValue = isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '';
+// KIỂM TRA SESSION - XÓA SAU KHI XONG
+
 ?>
 
 <!-- 🔵 BANNER -->
@@ -48,8 +51,13 @@ $searchValue = isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '';
     <div class="menu-item">
         <a href="index.php">Trang chủ</a>
     </div>
+    <?php if (is_logged_in() && is_admin()): ?>
+<div class="menu-item">
+    <a href="admin_stats.php">📊 Thống kê doanh thu</a>
+</div>
+<?php endif; ?>
     <div class="menu-item has-submenu">
-        <a href="category.php?category=sach_vietnam">Sách Việt Nam</a>
+        <a href="category.php?category=sach_vietnam">Sách Khảo Cứu & Di Sản</a>
         <div class="submenu">
             <a href="category.php?category=sach_vietnam&sub=bup_be">Búp Bê - Thú Bông</a>
             <a href="category.php?category=sach_vietnam&sub=do_choi_xe_may_bay">Đồ Chơi Xe, Máy Bay</a>
@@ -61,7 +69,7 @@ $searchValue = isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '';
         </div>
     </div>
     <div class="menu-item has-submenu">
-        <a href="category.php?category=sach_nuoc_ngoai">Foreign Books</a>
+        <a href="category.php?category=sach_nuoc_ngoai">Nghệ Thuật & Kiến Trúc Việt</a>
         <div class="submenu">
             <a href="category.php?category=sach_nuoc_ngoai&sub=tieu_thuyet">Tiểu Thuyết</a>
             <a href="category.php?category=sach_nuoc_ngoai&sub=kinh_doanh">Kinh Doanh</a>
@@ -69,7 +77,7 @@ $searchValue = isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '';
         </div>
     </div>
     <div class="menu-item has-submenu">
-        <a href="category.php?category=van_phong_pham">Văn Phòng Phẩm</a>
+        <a href="category.php?category=van_phong_pham">Văn Học & Tinh Hoa Nghệ Thuật Ngôn Từ</a>
         <div class="submenu">
             <a href="category.php?category=van_phong_pham&sub=but">Bút</a>
             <a href="category.php?category=van_phong_pham&sub=so_tay">Sổ Tay</a>
@@ -77,7 +85,7 @@ $searchValue = isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '';
         </div>
     </div>
     <div class="menu-item has-submenu">
-        <a href="category.php?category=do_choi">Đồ Chơi</a>
+        <a href="category.php?category=do_choi">Văn Hóa Ẩm Thực & Phong Vị Bản Địa</a>
         <div class="submenu">
             <a href="category.php?category=do_choi&sub=do_choi_tre_em">Đồ Chơi Trẻ Em</a>
             <a href="category.php?category=do_choi&sub=do_choi_giao_duc">Đồ Chơi Giáo Dục</a>
@@ -85,7 +93,7 @@ $searchValue = isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '';
         </div>
     </div>
     <div class="menu-item has-submenu">
-        <a href="category.php?category=qua_tang">Quà Tặng</a>
+        <a href="category.php?category=qua_tang">Ấn Phẩm Văn Hóa</a>
         <div class="submenu">
             <a href="category.php?category=qua_tang&sub=gift_set">Gift Set</a>
             <a href="category.php?category=qua_tang&sub=qua_sinh_nhat">Quà Sinh Nhật</a>
@@ -103,6 +111,15 @@ $searchValue = isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '';
         <span class="cart-icon">🛒</span>
         <span class="cart-count"><?= $cartCount ?></span>
     </a>
+</div>
+
+<!-- Quick View Modal -->
+<div id="quick-view-modal" class="qv-modal" aria-hidden="true">
+    <div class="qv-backdrop"></div>
+    <div class="qv-panel" role="dialog" aria-modal="true">
+        <button class="qv-close" aria-label="Đóng">✕</button>
+        <div id="qv-content">Loading…</div>
+    </div>
 </div>
 
 <script>
@@ -124,6 +141,44 @@ document.addEventListener('DOMContentLoaded', function() {
             top: 0,
             behavior: 'smooth'
         });
+    });
+    
+    // Quick view modal logic
+    const qvModal = document.getElementById('quick-view-modal');
+    const qvContent = document.getElementById('qv-content');
+    const qvClose = qvModal.querySelector('.qv-close');
+
+    function openQuickView(id) {
+        qvModal.setAttribute('aria-hidden', 'false');
+        qvContent.innerHTML = 'Đang tải...';
+        fetch('quick_view.php?id=' + encodeURIComponent(id))
+            .then(r => {
+                if (!r.ok) throw new Error('Không tải được sản phẩm');
+                return r.text();
+            })
+            .then(html => qvContent.innerHTML = html)
+            .catch(err => qvContent.innerHTML = '<p>Lỗi: ' + err.message + '</p>');
+    }
+
+    function closeQuickView() {
+        qvModal.setAttribute('aria-hidden', 'true');
+        qvContent.innerHTML = '';
+    }
+
+    document.body.addEventListener('click', function(e) {
+        const btn = e.target.closest('.quick-view-btn');
+        if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = btn.getAttribute('data-id');
+            openQuickView(id);
+        }
+        if (e.target.matches('.qv-backdrop') || e.target.closest('.qv-close')) {
+            closeQuickView();
+        }
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && qvModal.getAttribute('aria-hidden') === 'false') closeQuickView();
     });
 });
 </script>

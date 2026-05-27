@@ -50,8 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        $stock = intval($_POST['stock'] ?? 0);
-
         if ($messageType !== 'error') {
             $name_escaped = $conn->real_escape_string($name);
             $price_escaped = $conn->real_escape_string($price);
@@ -60,9 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $publisher_escaped = $conn->real_escape_string($publisher);
             $description_escaped = $conn->real_escape_string($description);
             $image_escaped = $conn->real_escape_string($image);
-            $stock_escaped = $conn->real_escape_string($stock);
 
-            $sql = "INSERT INTO products (name, price, category, author, publisher, description, image, stock) VALUES ('$name_escaped', '$price_escaped', '$category_escaped', '$author_escaped', '$publisher_escaped', '$description_escaped', '$image_escaped', '$stock_escaped')";
+            $sql = "INSERT INTO products (name, price, category, author, publisher, description, image) VALUES ('$name_escaped', '$price_escaped', '$category_escaped', '$author_escaped', '$publisher_escaped', '$description_escaped', '$image_escaped')";
 
             if ($conn->query($sql) === TRUE) {
                 header('Location: products_list.php?added=1');
@@ -243,11 +240,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="form-group">
-            <label for="stock">Số Lượng Tồn Kho</label>
-            <input type="number" id="stock" name="stock" placeholder="Ví dụ: 50" value="<?php echo isset($_POST['stock']) ? htmlspecialchars($_POST['stock']) : '0'; ?>" min="0">
-        </div>
-
-        <div class="form-group">
             <label for="author">Tác Giả</label>
             <input type="text" id="author" name="author" placeholder="Ví dụ: Sơn Tùng" value="<?php echo isset($_POST['author']) ? htmlspecialchars($_POST['author']) : ''; ?>">
         </div>
@@ -256,7 +248,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="publisher">Nhà Xuất Bản</label>
             <input type="text" id="publisher" name="publisher" placeholder="Ví dụ: NXB Kim Đồng" value="<?php echo isset($_POST['publisher']) ? htmlspecialchars($_POST['publisher']) : ''; ?>">
         </div>
-
+<div class="form-group">
+    <label for="stock">Số Lượng Tồn Kho</label>
+    <input type="number" id="stock" name="stock" placeholder="Ví dụ: 50" value="0" min="0">
+    <small style="color: #666;">Nhập số lượng sản phẩm có trong kho</small>
+</div>
         <div class="form-group">
             <label for="category">Danh Mục <span style="color: red;">*</span></label>
             <select id="category" name="category" required>
