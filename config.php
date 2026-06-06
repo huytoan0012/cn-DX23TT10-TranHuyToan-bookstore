@@ -42,7 +42,6 @@ function cart_count() {
 function get_cart_items() {
     return $_SESSION['cart'] ?? [];
 }
-// Kiểm tra user có phải admin không
 function is_admin() {
     $user = current_user();
     return ($user && isset($user['role']) && $user['role'] === 'admin');

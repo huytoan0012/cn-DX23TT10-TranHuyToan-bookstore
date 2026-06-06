@@ -405,13 +405,13 @@
         <tbody>
             <?php 
             // Mảng chuyển đổi mã danh mục thành tên hiển thị
-            $categoryNames = [
-                'sach_vietnam' => 'Sách Khảo Cứu & Di Sản',
-                'sach_nuoc_ngoai' => 'Nghệ Thuật & Kiến Trúc Việt',
-                'van_phong_pham' => 'Văn Học & Tinh Hoa Nghệ Thuật Ngôn Từ',
-                'do_choi' => 'Văn Hóa Ẩm Thực & Phong Vị Bản Địa',
-                'qua_tang' => 'Ấn Phẩm Văn Hóa'
-            ];
+           $categoryNames = [
+    'sach_khao_cuu_va_di_san' => 'Sách Khảo Cứu & Di Sản',
+    'nghe_thuat_va_kien_truc_viet' => 'Nghệ Thuật & Kiến Trúc Việt',
+    'van_hoc_va_tinh_hoa_nghe_thuat_ngon_tu' => 'Văn Học & Tinh Hoa Nghệ Thuật Ngôn Từ',
+    'van_hoa_am_thuc_va_phong_vi' => 'Văn Hóa Ẩm Thực & Phong Vị Bản Địa',
+    'an_pham_van_hoa' => 'Ấn Phẩm Văn Hóa'
+];
             
             while ($row = $result->fetch_assoc()): 
                 $stockClass = 'stock-high';

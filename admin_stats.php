@@ -1,8 +1,7 @@
 <?php
 include "config.php";
 
-// Kiểm tra đăng nhập (chỉ admin mới xem được)
-// Chỉ admin mới được xem thống kê
+
 if (!is_logged_in()) {
     header('Location: login.php?redirect=admin_stats.php');
     exit;
@@ -13,7 +12,7 @@ if (!is_admin()) {
     exit;
 }
 
-// Xử lý lọc theo thời gian
+
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'month';
 $custom_start = isset($_GET['start_date']) ? $_GET['start_date'] : '';
 $custom_end = isset($_GET['end_date']) ? $_GET['end_date'] : '';
@@ -55,7 +54,6 @@ $totalData = $totalResult->fetch_assoc();
 $totalRevenue = $totalData['total'] ?? 0;
 $totalOrders = $totalData['orders'] ?? 0;
 
-// Lấy doanh thu theo ngày cho biểu đồ (7 ngày gần nhất hoặc theo filter)
 // Lấy doanh thu theo ngày cho biểu đồ (7 ngày gần nhất hoặc theo filter)
 if ($filter == 'week' || $filter == 'today') {
     $sqlChart = "SELECT DATE(sale_date) as date, SUM(total_price) as daily_total, COUNT(*) as daily_orders

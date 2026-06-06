@@ -24,10 +24,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
        if ($user && password_verify($password, $user['password_hash'])) {
     $_SESSION['user'] = [
-        'id' => $user['id'],
-        'username' => $user['username'],
-        'role' => $user['role'] ?? 'user',  // 👈 THÊM DÒNG NÀY
-    ];
+    'id' => $user['id'],
+    'username' => $user['username'],
+    'role' => $user['role'],
+];
     header('Location: ' . $redirect);
     exit;
 }

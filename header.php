@@ -51,30 +51,34 @@ $searchValue = isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '';
     <div class="menu-item">
         <a href="index.php">Trang chủ</a>
     </div>
+    
     <?php if (is_logged_in() && is_admin()): ?>
-<div class="menu-item">
-    <a href="admin_stats.php">📊 Thống kê doanh thu</a>
+    <div class="menu-item">
+        <a href="admin_stats.php">📊 Thống kê doanh thu</a>
+    </div>
+    <div class="menu-item">
+    <a href="orders.php">📋 Quản lý đơn hàng</a>
 </div>
-<?php endif; ?>
-    <div class="menu-item has-submenu">
-        <a href="category.php?category=sach_vietnam">Sách Khảo Cứu & Di Sản</a>
-        
+    <?php endif; ?>
+    
+    <div class="menu-item">
+        <a href="category.php?category=sach_khao_cuu_va_di_san"> Sách Khảo Cứu & Di Sản</a>
     </div>
-    <div class="menu-item has-submenu">
-        <a href="category.php?category=sach_nuoc_ngoai">Nghệ Thuật & Kiến Trúc Việt</a>
-        
+    
+    <div class="menu-item">
+        <a href="category.php?category=nghe_thuat_va_kien_truc_viet"> Nghệ Thuật & Kiến Trúc Việt</a>
     </div>
-    <div class="menu-item has-submenu">
-        <a href="category.php?category=van_phong_pham">Văn Học & Tinh Hoa Nghệ Thuật Ngôn Từ</a>
-        
+    
+    <div class="menu-item">
+        <a href="category.php?category=van_hoc_va_tinh_hoa_nghe_thuat_ngon_tu"> Văn Học & Tinh Hoa Nghệ Thuật Ngôn Từ</a>
     </div>
-    <div class="menu-item has-submenu">
-        <a href="category.php?category=do_choi">Văn Hóa Ẩm Thực & Phong Vị Bản Địa</a>
-        
+    
+    <div class="menu-item">
+        <a href="category.php?category=van_hoa_am_thuc_va_phong_vi"> Văn Hóa Ẩm Thực & Phong Vị Bản Địa</a>
     </div>
-    <div class="menu-item has-submenu">
-        <a href="category.php?category=qua_tang">Ấn Phẩm Văn Hóa</a>
-        
+    
+    <div class="menu-item">
+        <a href="category.php?category=an_pham_van_hoa"> Ấn Phẩm Văn Hóa</a>
     </div>
 </div>
 

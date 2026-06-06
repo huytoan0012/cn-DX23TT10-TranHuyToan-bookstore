@@ -13,33 +13,17 @@
 <?php
 $category = isset($_GET['category']) ? $_GET['category'] : '';
 $sub = isset($_GET['sub']) ? $_GET['sub'] : '';
+
+// Ánh xạ từ mã danh mục (trong URL và database) sang tên hiển thị
 $categories = [
-    'sach_vietnam' => 'Sách Khảo Cứu & Di Sản',
-    'sach_nuoc_ngoai' => 'Nghệ Thuật & Kiến Trúc Việt',
-    'van_phong_pham' => 'Văn Học & Tinh Hoa Nghệ Thuật Ngôn Từ',
-    'do_choi' => 'Văn Hóa Ẩm Thực & Phong Vị Bản Địa',
-    'qua_tang' => 'Ấn Phẩm Văn Hóa'
+    'sach_khao_cuu_va_di_san' => 'Sách Khảo Cứu & Di Sản',
+    'nghe_thuat_va_kien_truc_viet' => 'Nghệ Thuật & Kiến Trúc Việt',
+    'van_hoc_va_tinh_hoa_nghe_thuat_ngon_tu' => 'Văn Học & Tinh Hoa Nghệ Thuật Ngôn Từ',
+    'van_hoa_am_thuc_va_phong_vi' => 'Văn Hóa Ẩm Thực & Phong Vị Bản Địa',
+    'an_pham_van_hoa' => 'Ấn Phẩm Văn Hóa'
 ];
-$subNames = [
-    'bup_be' => 'Búp Bê - Thú Bông',
-    'do_choi_xe_may_bay' => 'Đồ Chơi Xe, Máy Bay',
-    'robot_sieu_nhan' => 'Robot - Siêu Nhân',
-    'board_game' => 'Board Game',
-    'do_choi_van_dong' => 'Đồ Chơi Vận Động',
-    'do_choi_giao_duc' => 'Đồ Chơi Giáo Dục',
-    'hobby' => 'Hobby',
-    'tieu_thuyet' => 'Tiểu Thuyết',
-    'kinh_doanh' => 'Kinh Doanh',
-    'khoa_hoc' => 'Khoa Học',
-    'but' => 'Bút',
-    'so_tay' => 'Sổ Tay',
-    'tui_dung' => 'Túi Đựng',
-    'do_choi_tre_em' => 'Đồ Chơi Trẻ Em',
-    'do_choi_ngoai_troi' => 'Đồ Chơi Ngoài Trời',
-    'gift_set' => 'Gift Set',
-    'qua_sinh_nhat' => 'Quà Sinh Nhật',
-    'qua_luu_niem' => 'Quà Lưu Niệm'
-];
+
+
 
 if (!isset($categories[$category])) {
     echo '<h2 class="title">Danh mục không tồn tại</h2>';
@@ -62,8 +46,8 @@ $result = $conn->query($sql);
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $imagePath = !empty($row['image_primary']) && file_exists(__DIR__ . '/images/products/' . $row['image_primary'])
-    ? 'images/products/' . htmlspecialchars($row['image_primary'])
-    : 'images/banner.jpg';
+            ? 'images/products/' . htmlspecialchars($row['image_primary'])
+            : 'images/banner.jpg';
         echo "<a class='product-link' href='product.php?id=" . $row['id'] . "'>";
         echo "<div class='product'>";
         echo "<div class='product-image'>";
@@ -88,6 +72,6 @@ if ($result && $result->num_rows > 0) {
 ?>
     </div>
 </div>
-
+<?php include 'footer.php'; ?>
 </body>
 </html>

@@ -2,7 +2,6 @@
 include "config.php";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Xử lý cập nhật giỏ hàng
     if (isset($_POST['update_cart']) && isset($_POST['quantity']) && is_array($_POST['quantity'])) {
         foreach ($_POST['quantity'] as $productId => $quantity) {
             $id = intval($productId);
@@ -18,7 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Xóa sản phẩm khỏi giỏ
     if (isset($_POST['remove'])) {
         $id = intval($_POST['remove']);
         unset($_SESSION['cart'][$id]);
@@ -27,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Xóa toàn bộ giỏ hàng
     if (isset($_POST['clear_cart'])) {
         $_SESSION['cart'] = [];
         $_SESSION['flash_message'] = 'Đã xóa toàn bộ giỏ hàng.';
@@ -35,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Xử lý thanh toán từ popup
     if (isset($_POST['checkout_complete'])) {
         $cartItems = $_SESSION['cart'] ?? [];
         
@@ -45,14 +41,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
         
-        // Lấy thông tin từ form
         $customer_name = trim($_POST['customer_name']);
         $customer_email = trim($_POST['customer_email']);
         $customer_phone = trim($_POST['customer_phone']);
         $customer_address = trim($_POST['customer_address']);
         $payment_method = $_POST['payment_method'] ?? 'cod';
         
-        // Validate
         $errors = [];
         if (empty($customer_name)) $errors[] = 'Vui lòng nhập họ tên';
         if (empty($customer_email) || !filter_var($customer_email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Email không hợp lệ';
@@ -66,7 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
         
-        // Lấy thông tin sản phẩm từ database
         $ids = array_keys($cartItems);
         $idList = implode(',', array_map('intval', $ids));
         $sql = "SELECT * FROM products WHERE id IN ($idList)";
@@ -76,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $products[$row['id']] = $row;
         }
         
-        // Tính tổng tiền
         $total = 0;
         foreach ($cartItems as $productId => $quantity) {
             if (isset($products[$productId])) {
@@ -84,14 +76,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        // Tạo mã đơn hàng duy nhất
         $order_code = 'DH' . date('Ymd') . '_' . strtoupper(uniqid());
         
-        // Bắt đầu transaction
         $conn->begin_transaction();
         
         try {
-            // Lưu vào bảng orders
             $stmt = $conn->prepare("INSERT INTO orders (order_code, customer_name, customer_email, customer_phone, customer_address, total_amount, payment_method) 
                                     VALUES (?, ?, ?, ?, ?, ?, ?)");
             $stmt->bind_param("sssssss", $order_code, $customer_name, $customer_email, $customer_phone, $customer_address, $total, $payment_method);
@@ -99,12 +88,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $order_id = $stmt->insert_id;
             $stmt->close();
             
-            // Lưu chi tiết đơn hàng và cập nhật tồn kho
             foreach ($cartItems as $productId => $quantity) {
                 $product = $products[$productId];
                 $subtotal = $product['price'] * $quantity;
                 
-                // Lưu order_items
                 $stmt = $conn->prepare("INSERT INTO order_items (order_id, product_id, product_name, quantity, price) VALUES (?, ?, ?, ?, ?)");
                 $stmt->bind_param("iisid", $order_id, $productId, $product['name'], $quantity, $product['price']);
                 $stmt->execute();
@@ -114,14 +101,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   VALUES ($productId, $quantity, $subtotal, NOW())";
     $conn->query($sales_sql);
     
-                // Cập nhật tồn kho
                 $newStock = $product['stock'] - $quantity;
                 $conn->query("UPDATE products SET stock = $newStock WHERE id = $productId");
             }
             
             $conn->commit();
             
-            // Xóa giỏ hàng
             $_SESSION['cart'] = [];
             $_SESSION['flash_message'] = '✅ Đặt hàng thành công! Mã đơn hàng: ' . $order_code;
             
@@ -135,7 +120,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Lấy giỏ hàng hiện tại
 $cartItems = $_SESSION['cart'] ?? [];
 $products = [];
 $total = 0;
@@ -251,7 +235,6 @@ unset($_SESSION['checkout_data']);
             border-left: 4px solid #dc3545;
         }
         
-        /* POPUP MODAL */
         .modal {
             display: none;
             position: fixed;
@@ -343,7 +326,7 @@ unset($_SESSION['checkout_data']);
     </style>
 </head>
 <body>
-<?php include 'header.php'; ?>
+<?php include 'header.php'; ?>  
 
 <div class="cart-page">
     <h2>🛒 Giỏ hàng của bạn</h2>
@@ -400,7 +383,6 @@ unset($_SESSION['checkout_data']);
     <?php endif; ?>
 </div>
 
-<!-- POPUP THANH TOÁN -->
 <div id="checkoutModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -464,28 +446,24 @@ unset($_SESSION['checkout_data']);
 </div>
 
 <script>
-// Hiển thị popup khi bấm nút Thanh toán
 document.getElementById('showCheckoutModal')?.addEventListener('click', function() {
     document.getElementById('checkoutModal').classList.add('show');
 });
 
-// Đóng popup
 function closeModal() {
     document.getElementById('checkoutModal').classList.remove('show');
 }
 
-// Đóng khi click ra ngoài
 document.getElementById('checkoutModal')?.addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();
     }
 });
 
-// Hiển thị popup nếu có lỗi validation
 <?php if (!empty($checkoutErrors)): ?>
 document.getElementById('checkoutModal').classList.add('show');
 <?php endif; ?>
 </script>
-
+<?php include 'footer.php'; ?>
 </body>
 </html>
