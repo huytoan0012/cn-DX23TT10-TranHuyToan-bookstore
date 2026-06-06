@@ -1,7 +1,6 @@
 <?php include "config.php"; ?>
 
 <?php
-// Hàm upload ảnh
 function uploadImage($file) {
     $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -32,7 +31,6 @@ $message = '';
 $messageType = '';
 $product = null;
 
-// Kiểm tra ID sản phẩm
 if (!isset($_GET['id'])) {
     $message = '❌ Lỗi: Không tìm thấy sản phẩm!';
     $messageType = 'error';
@@ -49,7 +47,6 @@ if (!isset($_GET['id'])) {
     }
 }
 
-// Xử lý xóa ảnh phụ (qua AJAX hoặc form)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_single_image']) && isset($_POST['image_name'])) {
     $image_name = $_POST['image_name'];
     $current_images = explode(',', $product['images']);
@@ -61,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_single_image']
         }
     }
     
-    // Xóa file ảnh
     if (file_exists('images/products/' . $image_name)) {
         unlink('images/products/' . $image_name);
     }
@@ -69,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_single_image']
     $new_images_string = implode(',', $new_images);
     $conn->query("UPDATE products SET images = '$new_images_string' WHERE id = $id");
     
-    // Cập nhật lại product
     $result = $conn->query("SELECT * FROM products WHERE id = $id");
     $product = $result->fetch_assoc();
     
@@ -77,7 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_single_image']
     $messageType = 'success';
 }
 
-// Xử lý form submit
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product']) && $product) {
     $name = isset($_POST['name']) ? trim($_POST['name']) : '';
     $price = isset($_POST['price']) ? trim($_POST['price']) : '';
@@ -87,11 +81,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product']) && 
     $description = isset($_POST['description']) ? trim($_POST['description']) : '';
     $stock = isset($_POST['stock']) ? intval($_POST['stock']) : 0;
     $image_primary = $product['image_primary'];
+        $existing_images = !empty($product['images']) ? explode(',', $product['images']) : array();
     
-    // Lấy danh sách ảnh phụ hiện tại
-    $existing_images = !empty($product['images']) ? explode(',', $product['images']) : array();
-    
-    // Xóa ảnh phụ được chọn
     if (isset($_POST['delete_images']) && is_array($_POST['delete_images'])) {
         foreach ($_POST['delete_images'] as $img_to_delete) {
             $key = array_search($img_to_delete, $existing_images);
@@ -104,7 +95,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product']) && 
         }
     }
     
-    // Upload ảnh chính mới
     if (isset($_FILES['image_primary']) && $_FILES['image_primary']['error'] === UPLOAD_ERR_OK) {
         $uploaded = uploadImage($_FILES['image_primary']);
         if ($uploaded) {
@@ -116,7 +106,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product']) && 
         }
     }
     
-    // Upload thêm ảnh phụ mới
     if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
         foreach ($_FILES['images']['tmp_name'] as $key => $tmp_name) {
             if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
@@ -134,7 +123,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product']) && 
         }
     }
     
-    // Kiểm tra thông tin bắt buộc
     if (empty($name) || empty($price) || empty($category)) {
         $message = '⚠️ Vui lòng điền đầy đủ thông tin bắt buộc!';
         $messageType = 'error';
@@ -168,7 +156,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product']) && 
         if ($conn->query($sql) === TRUE) {
             $message = '✅ Cập nhật sản phẩm thành công!';
             $messageType = 'success';
-            // Cập nhật lại dữ liệu
             $result = $conn->query("SELECT * FROM products WHERE id = $id");
             $product = $result->fetch_assoc();
         } else {
@@ -186,7 +173,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product']) && 
     <title>Chỉnh Sửa Sản Phẩm - Nhà Sách Á Đông</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* CSS bổ sung riêng cho form chỉnh sửa sản phẩm */
         .edit-product-wrapper {
             max-width: 900px;
             margin: 30px auto;
@@ -469,15 +455,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product']) && 
                 </div>
 
                 <div class="form-group">
-                    <label>Danh Mục <span class="required">*</span></label>
-                    <select name="category" required>
-                        <option value="sach_vietnam" <?php echo $product['category'] === 'sach_vietnam' ? 'selected' : ''; ?>>Sách Khảo Cứu & Di Sản</option>
-                        <option value="sach_nuoc_ngoai" <?php echo $product['category'] === 'sach_nuoc_ngoai' ? 'selected' : ''; ?>>Nghệ Thuật & Kiến Trúc Việt</option>
-                        <option value="van_phong_pham" <?php echo $product['category'] === 'van_phong_pham' ? 'selected' : ''; ?>>Văn Học & Tinh Hoa Nghệ Thuật Ngôn Từ</option>
-                        <option value="do_choi" <?php echo $product['category'] === 'do_choi' ? 'selected' : ''; ?>>Văn Hóa Ẩm Thực & Phong Vị Bản Địa</option>
-                        <option value="qua_tang" <?php echo $product['category'] === 'qua_tang' ? 'selected' : ''; ?>>Ấn Phẩm Văn Hóa</option>
-                    </select>
-                </div>
+                    <div class="form-group">
+    <label for="category">Danh Mục <span style="color: red;">*</span></label>
+    <select id="category" name="category" required>
+        <option value="sach_khao_cuu_va_di_san" <?php echo ($product['category'] == 'sach_khao_cuu_va_di_san') ? 'selected' : ''; ?>>Sách Khảo Cứu & Di Sản</option>
+        <option value="nghe_thuat_va_kien_truc_viet" <?php echo ($product['category'] == 'nghe_thuat_va_kien_truc_viet') ? 'selected' : ''; ?>>Nghệ Thuật & Kiến Trúc Việt</option>
+        <option value="van_hoc_va_tinh_hoa_nghe_thuat_ngon_tu" <?php echo ($product['category'] == 'van_hoc_va_tinh_hoa_nghe_thuat_ngon_tu') ? 'selected' : ''; ?>>Văn Học & Tinh Hoa Nghệ Thuật Ngôn Từ</option>
+        <option value="van_hoa_am_thuc_va_phong_vi" <?php echo ($product['category'] == 'van_hoa_am_thuc_va_phong_vi') ? 'selected' : ''; ?>>Văn Hóa Ẩm Thực & Phong Vị Bản Địa</option>
+        <option value="an_pham_van_hoa" <?php echo ($product['category'] == 'an_pham_van_hoa') ? 'selected' : ''; ?>>Ấn Phẩm Văn Hóa</option>
+    </select>
+</div>
 
                 <div class="form-row">
                     <div class="form-group">

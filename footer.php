@@ -1,15 +1,12 @@
-<!-- footer.php - Đặt ở cuối mỗi trang -->
+
 <footer style="background: #1e3c72; color: white; padding: 40px 0 20px; margin-top: 50px;">
     <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; padding: 0 20px;">
-        
-        <!-- Cột 1: Giới thiệu -->
         <div>
             <img src="images/logo.png" alt="Logo" style="height: 50px; margin-bottom: 15px;">
-            <p style="font-size: 14px; line-height: 1.6;">Nhà Sách Á Đông - Nơi tri thức văn hóa Việt được lan tỏa.</p>
+            <p style="font-size: 14px; line-height: 1.6;">Nhà Sách Á Đông ----TRẦN HUY TOÀN-172123399-DX23TT10-Xây dựng website mua bán sách và ấn phẩm Việt Nam</p>
             <p style="font-size: 12px; margin-top: 15px;">© 2024 Á Đông Bookstore</p>
         </div>
         
-        <!-- Cột 2: Liên hệ -->
         <div>
             <h4 style="margin-bottom: 15px;">📞 LIÊN HỆ</h4>
             <p style="margin: 5px 0;">📍 123 Đường Sách, Quận 1, TP.HCM</p>
@@ -17,7 +14,6 @@
             <p style="margin: 5px 0;">📞 1900.1234</p>
         </div>
         
-        <!-- Cột 3: Hỗ trợ -->
         <div>
             <h4 style="margin-bottom: 15px;">🔗 HỖ TRỢ</h4>
             <p style="margin: 5px 0;"><a href="#" style="color: white; text-decoration: none;">Hướng dẫn mua hàng</a></p>
@@ -25,7 +21,6 @@
             <p style="margin: 5px 0;"><a href="#" style="color: white; text-decoration: none;">Phương thức vận chuyển</a></p>
         </div>
         
-        <!-- Cột 4: Kết nối -->
         <div>
             <h4 style="margin-bottom: 15px;">🌐 KẾT NỐI</h4>
             <div style="display: flex; gap: 15px; font-size: 24px;">

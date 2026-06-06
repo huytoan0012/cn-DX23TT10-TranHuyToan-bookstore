@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$conn = new mysqli("localhost", "root", "", "bookstore_db");
+$conn = new mysqli("127.0.0.1", "root", "", "bookstore_db");
 if ($conn->connect_error) {
     die("Kết nối thất bại: " . $conn->connect_error);
 }

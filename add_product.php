@@ -1,7 +1,7 @@
 <?php include "config.php"; ?>
 
 <?php
-// Hàm upload ảnh
+
 function uploadImage($file) {
     $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $image_primary = '';
     $images_array = array();
 
-    // Kiểm tra thông tin bắt buộc
+   
     if (empty($name) || empty($price) || empty($category)) {
         $message = '⚠️ Vui lòng điền đầy đủ thông tin bắt buộc (Tên, Giá, Danh mục)!';
         $messageType = 'error';
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = '⚠️ Giá sản phẩm phải là số dương!';
         $messageType = 'error';
     } else {
-        // Upload ảnh chính
+        
         if (isset($_FILES['image_primary']) && $_FILES['image_primary']['error'] === UPLOAD_ERR_OK) {
             $uploaded = uploadImage($_FILES['image_primary']);
             if ($uploaded) {
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        // Upload nhiều ảnh phụ
+        
         if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
             foreach ($_FILES['images']['tmp_name'] as $key => $tmp_name) {
                 if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $images_string = implode(',', $images_array);
         
-        // Escape dữ liệu để tránh SQL injection
+        
         $name_escaped = $conn->real_escape_string($name);
         $price_escaped = $conn->real_escape_string($price);
         $category_escaped = $conn->real_escape_string($category);
@@ -110,7 +110,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Thêm Sản Phẩm - Nhà Sách Á Đông</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* CSS bổ sung riêng cho form thêm sản phẩm */
         .add-product-wrapper {
             max-width: 800px;
             margin: 30px auto;
@@ -338,16 +337,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <div class="form-group">
-                    <label>Danh Mục <span class="required">*</span></label>
-                    <select name="category" required>
-                        <option value="">-- Chọn danh mục --</option>
-                        <option value="sach_vietnam">Sách Khảo Cứu & Di Sản</option>
-                        <option value="sach_nuoc_ngoai">Nghệ Thuật & Kiến Trúc Việt</option>
-                        <option value="van_phong_pham">Văn Học & Tinh Hoa Nghệ Thuật Ngôn Từ</option>
-                        <option value="do_choi">Văn Hóa Ẩm Thực & Phong Vị Bản Địa</option>
-                        <option value="qua_tang">Ấn Phẩm Văn Hóa</option>
-                    </select>
-                </div>
+    <label>Danh Mục <span class="required">*</span></label>
+    <select name="category" required>
+        <option value="sach_khao_cuu_va_di_san">Sách Khảo Cứu & Di Sản</option>
+        <option value="nghe_thuat_va_kien_truc_viet">Nghệ Thuật & Kiến Trúc Việt</option>
+        <option value="van_hoc_va_tinh_hoa_nghe_thuat_ngon_tu">Văn Học & Tinh Hoa Nghệ Thuật Ngôn Từ</option>
+        <option value="van_hoa_am_thuc_va_phong_vi">Văn Hóa Ẩm Thực & Phong Vị Bản Địa</option>
+        <option value="an_pham_van_hoa">Ấn Phẩm Văn Hóa</option>
+    </select>
+</div>
 
                 <div class="form-row">
                     <div class="form-group">

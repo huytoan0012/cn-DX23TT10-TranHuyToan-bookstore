@@ -13,7 +13,7 @@ $is_admin = is_admin();
 if ($is_admin && isset($_POST['update_status']) && isset($_POST['order_id']) && isset($_POST['status'])) {
     $order_id = intval($_POST['order_id']);
     $status = $conn->real_escape_string($_POST['status']);
-    $conn->query("UPDATE orders SET status = '$status', updated_at = NOW() WHERE id = $order_id");
+    $conn->query("UPDATE orders SET order_status = '$status' WHERE id = $order_id");
     header('Location: orders.php');
     exit;
 }
@@ -21,13 +21,13 @@ if ($is_admin && isset($_POST['update_status']) && isset($_POST['order_id']) && 
 // Lấy danh sách đơn hàng
 if ($is_admin) {
     // Admin xem tất cả đơn hàng
-    $sql = "SELECT o.*, u.username FROM orders o 
-            LEFT JOIN users u ON o.user_id = u.id 
-            ORDER BY o.order_date DESC";
+    $sql = "SELECT * FROM orders ORDER BY order_date DESC";
     $result = $conn->query($sql);
 } else {
-    // Khách hàng xem đơn hàng của mình
-    $sql = "SELECT * FROM orders WHERE user_id = $user_id ORDER BY order_date DESC";
+    // Khách hàng xem đơn hàng của mình (dựa trên email hoặc tên)
+    // Lưu ý: Bảng orders không có cột user_id, dùng customer_email để lọc
+    $email = $conn->real_escape_string($_SESSION['user']['username']);
+    $sql = "SELECT * FROM orders WHERE customer_email = '$email' ORDER BY order_date DESC";
     $result = $conn->query($sql);
 }
 ?>
@@ -167,24 +167,24 @@ if ($is_admin) {
             </thead>
             <tbody>
                 <?php while($order = $result->fetch_assoc()): 
-                    $statusMap = [
-                        'pending' => 'pending',
-                        'confirmed' => 'confirmed', 
-                        'shipping' => 'shipping',
-                        'completed' => 'completed',
-                        'cancelled' => 'cancelled'
-                    ];
-                    $statusClass = 'status-' . ($statusMap[$order['status']] ?? 'pending');
-                    $statusText = [
-                        'pending' => 'Chờ xác nhận',
-                        'confirmed' => 'Đã xác nhận',
-                        'shipping' => 'Đang giao',
-                        'completed' => 'Hoàn thành',
-                        'cancelled' => 'Đã hủy'
-                    ];
-                    // Lấy số điện thoại (xử lý cả 2 tên cột)
-                    $phone = $order['customer_phone'] ?? $order['customern_phone'] ?? 'Chưa có';
-                    // Lấy địa chỉ
+                    $statusClass = 'status-pending';
+                    $statusText = 'Chờ xác nhận';
+                    
+                    if ($order['order_status'] == 'confirmed') {
+                        $statusClass = 'status-confirmed';
+                        $statusText = 'Đã xác nhận';
+                    } elseif ($order['order_status'] == 'shipping') {
+                        $statusClass = 'status-shipping';
+                        $statusText = 'Đang giao';
+                    } elseif ($order['order_status'] == 'completed') {
+                        $statusClass = 'status-completed';
+                        $statusText = 'Hoàn thành';
+                    } elseif ($order['order_status'] == 'cancelled') {
+                        $statusClass = 'status-cancelled';
+                        $statusText = 'Đã hủy';
+                    }
+                    
+                    $phone = $order['customer_phone'] ?? 'Chưa có';
                     $address = $order['customer_address'] ?? 'Chưa có địa chỉ';
                     $addressDisplay = mb_strlen($address) > 40 ? mb_substr($address, 0, 40) . '...' : $address;
                 ?>
@@ -196,18 +196,18 @@ if ($is_admin) {
                     <td class="address-cell" title="<?= htmlspecialchars($address) ?>"><?= htmlspecialchars($addressDisplay) ?></td>
                     <td><strong><?= number_format($order['total_amount'], 0, ',', '.') ?>đ</strong></td>
                     <td><?= $order['payment_method'] == 'cod' ? 'COD' : 'Chuyển khoản' ?></td>
-                    <td><span class="status <?= $statusClass ?>"><?= $statusText[$order['status']] ?></span></td>
+                    <td><span class="status <?= $statusClass ?>"><?= $statusText ?></span></td>
                     <td style="white-space: nowrap;">
                         <button class="btn-detail" onclick="toggleDetail(<?= $order['id'] ?>)">📋 Chi tiết</button>
                         <?php if ($is_admin): ?>
                         <form method="post" style="display: inline-block; margin-left: 5px;">
                             <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
                             <select name="status" onchange="this.form.submit()">
-                                <option value="pending" <?= $order['status'] == 'pending' ? 'selected' : '' ?>>Chờ xác nhận</option>
-                                <option value="confirmed" <?= $order['status'] == 'confirmed' ? 'selected' : '' ?>>Đã xác nhận</option>
-                                <option value="shipping" <?= $order['status'] == 'shipping' ? 'selected' : '' ?>>Đang giao</option>
-                                <option value="completed" <?= $order['status'] == 'completed' ? 'selected' : '' ?>>Hoàn thành</option>
-                                <option value="cancelled" <?= $order['status'] == 'cancelled' ? 'selected' : '' ?>>Đã hủy</option>
+                                <option value="pending" <?= $order['order_status'] == 'pending' ? 'selected' : '' ?>>Chờ xác nhận</option>
+                                <option value="confirmed" <?= $order['order_status'] == 'confirmed' ? 'selected' : '' ?>>Đã xác nhận</option>
+                                <option value="shipping" <?= $order['order_status'] == 'shipping' ? 'selected' : '' ?>>Đang giao</option>
+                                <option value="completed" <?= $order['order_status'] == 'completed' ? 'selected' : '' ?>>Hoàn thành</option>
+                                <option value="cancelled" <?= $order['order_status'] == 'cancelled' ? 'selected' : '' ?>>Đã hủy</option>
                             </select>
                             <input type="hidden" name="update_status" value="1">
                         </form>

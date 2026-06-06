@@ -539,3 +539,43 @@ body {
     .qv-image img { width: 100%; height: auto; max-height: 360px; }
     .qv-info { max-width: 100%; }
 }
+/* Fix menu không xuống dòng */
+.menu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    background: white;
+    padding: 12px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.menu-item {
+    display: inline-block;
+}
+
+.menu-item a {
+    display: inline-block;
+    padding: 8px 16px;
+    white-space: nowrap;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: all 0.3s;
+    border-radius: 8px;
+}
+
+.menu-item a:hover {
+    background: #0a58ca;
+    color: white;
+}
+
+/* Responsive: nếu màn hình nhỏ thì cho cuộn ngang */
+@media (max-width: 1000px) {
+    .menu {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;
+    }
+}
